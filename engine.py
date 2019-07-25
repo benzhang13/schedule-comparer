@@ -1,14 +1,16 @@
 import discord
 from app.process_excel import receive_file, read_all_files, delete_file
 from datetime import datetime
+from dotenv import load_dotenv
 import os
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
 client = discord.Client()
+load_dotenv()
 
 
 def run_bot():
-    token = os.environ['BOT_KEY']
+    token = os.environ['BOT_TOKEN']
     client.run(token)
 
 
