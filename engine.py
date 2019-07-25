@@ -29,11 +29,15 @@ async def on_message(message):
             await message.channel.send(message.author.mention + ', you have to attach your timetable.'
                                                                 ' You can find the template with $template')
         else:
-            already_exists = receive_file(message.attachments[0].url, str(message.author.id))
-            if already_exists:
+            result = receive_file(message.attachments[0].url, str(message.author.id))
+            if result.get('already_exists'):
                 await message.channel.send(message.author.mention +
                                            ', you already have a submitted timetable.'
                                            ' Please use $delete if you would like to replace your timetable.')
+            elif result.get('not_xlsx'):
+                await message.channel.send(message.author.mention +
+                                           ', that file is not a .xlsx file.'
+                                           ' Please use the excel template provided with the $template command')
             else:
                 await message.channel.send(message.author.mention + '\'s timetable submitted')
     elif message.content.startswith('$free'):

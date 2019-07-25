@@ -7,11 +7,12 @@ dir_path = os.path.dirname(os.path.realpath(__file__))
 def receive_file(url, username):
     if not os.path.exists(dir_path + '/spreadsheets'):
         os.mkdir(dir_path + '/spreadsheets')
-
-    if not os.path.isfile(dir_path + '/spreadsheets/' + username + 'schedule.xlsx') and url[-5:] == '.xlsx':
-        download_file(url, username)
-    else:
-        return True
+    if os.path.isfile(dir_path + '/spreadsheets/' + username + 'schedule.xlsx'):
+        return {'already_exists': True}
+    if url[-5:] != 'xlsx':
+        return {'not_xlsx': True}
+    download_file(url, username)
+    return {'submitted': True}
 
 
 def download_file(url, username):
