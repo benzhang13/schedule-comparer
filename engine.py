@@ -75,6 +75,14 @@ async def on_message(message):
                                        ', you have no timetable to delete. Use $submit to submit one.')
         else:
             await message.channel.send(message.author.mention + '\'s timetable deleted')
+    elif message.content.startswith('$get'):
+        file_path = '/app/spreadsheets/' + str(message.author.id) + 'schedule.xlsx'
+        if os.path.isfile(file_path):
+            file = discord.File(fp=dir_path + file_path, filename=message.author.name + '_schedule')
+            await message.channel.send(content=message.author.mention+', here you go!', file=file)
+        else:
+            await message.channel.send('It appears that you do not currently have a submitted schedule.'
+                                       ' Please use $help for commands to make one')
     elif message.content.startswith('$template'):
         user = message.author
         file = discord.File(fp=dir_path + '/app/generic_sheet/generic_sheet.xlsx')
@@ -86,6 +94,7 @@ async def on_message(message):
             $template: gets generic excel template
             $submit: submits the attached spreadsheet as a timetable
             $delete: deletes your current timetable
+            $get: gets your current submitted schedule as an excel file
             $free: mention everyone who has no classes at the moment
             """)
     elif message.content.startswith('$'):
