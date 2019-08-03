@@ -1,5 +1,6 @@
 import discord
 from app.process_excel import receive_file, read_all_files, delete_file
+from app.process_ical import receive_file as ical_receive_file
 from datetime import datetime
 from dotenv import load_dotenv
 import os
@@ -27,7 +28,7 @@ async def on_message(message):
     if message.content.startswith('$hello'):
         await message.channel.send(message.author.mention + ', hey!')
     elif message.content.startswith('$submit'):
-        if message.attachments is None:
+        if len(message.attachments) == 0:
             await message.channel.send(message.author.mention + ', you have to attach your timetable.'
                                                                 ' You can find the template with $template')
         else:
@@ -45,7 +46,6 @@ async def on_message(message):
     elif message.content.startswith('$free'):
         now = datetime.today().timetuple()
         semester = 0
-
         if now[1] > 9 and now[2] >= 5:
             semester = 1
         elif now[1] <= 4 and now[2] >= 6:
@@ -60,13 +60,17 @@ async def on_message(message):
                 minute = 30
             available = read_all_files(minute=minute, hour=now[3], day=datetime.today().weekday(), semester=semester)
 
-            if len(available) == 0:
+            available_in_guild = []
+            for user_id in available:
+                guild = message.guild
+                u = guild.get_member(user_id)
+                if u is not None:
+                    available_in_guild.append(u)
+            if len(available_in_guild) == 0:
                 await message.channel.send(message.author.mention + ', no one is currently available')
             else:
-                guild = message.guild
-                for user_id in available:
-                    u = guild.get_member(user_id)
-                    await message.channel.send(u.mention + ' ')
+                for user in available_in_guild:
+                    await message.channel.send(user.mention + ' ')
                 await message.channel.send('have no classes at the moment')
     elif message.content.startswith('$delete'):
         already_exists = delete_file(str(message.author.id))
@@ -76,9 +80,9 @@ async def on_message(message):
         else:
             await message.channel.send(message.author.mention + '\'s timetable deleted')
     elif message.content.startswith('$get'):
-        file_path = '/app/spreadsheets/' + str(message.author.id) + 'schedule.xlsx'
+        file_path = dir_path + '/app/spreadsheets/' + str(message.author.id) + 'schedule.xlsx'
         if os.path.isfile(file_path):
-            file = discord.File(fp=dir_path + file_path, filename=message.author.name + '_schedule')
+            file = discord.File(fp=file_path, filename=message.author.name + '_schedule.xlsx')
             await message.channel.send(content=message.author.mention+', here you go!', file=file)
         else:
             await message.channel.send('It appears that you do not currently have a submitted schedule.'
@@ -87,6 +91,45 @@ async def on_message(message):
         user = message.author
         file = discord.File(fp=dir_path + '/app/generic_sheet/generic_sheet.xlsx')
         await message.channel.send(content=user.mention + ', here you go!', file=file)
+    elif message.content.startswith('$subcal summer'):
+        if len(message.attachments) == 0:
+            await message.channel.send(message.author.mention + ', you must include the ICalendar file downloaded'
+                                                                ' from the ACORN website as an attachment.')
+        else:
+            results = ical_receive_file(message.attachments[0].url, message.author.id, 0)
+
+            if results.get('not_ics'):
+                await message.channel.send(message.author.mention + ', that is not a .ics file. Make sure you are'
+                                                                    ' submitting the file downloaded from the ACORN'
+                                                                    ' website.')
+            if results.get('submitted'):
+                await message.channel.send(message.author.mention + ', your timetable has successfully been edited.')
+    elif message.content.startswith('$subcal fall'):
+        if len(message.attachments) == 0:
+            await message.channel.send(message.author.mention + ', you must include the ICalendar file downloaded'
+                                                                ' from the ACORN website as an attachment.')
+        else:
+            results = ical_receive_file(message.attachments[0].url, message.author.id, 1)
+
+            if results.get('not_ics'):
+                await message.channel.send(message.author.mention + ', that is not a .ics file. Make sure you are'
+                                                                    ' submitting the file downloaded from the ACORN'
+                                                                    ' website.')
+            if results.get('submitted'):
+                await message.channel.send(message.author.mention + ', your timetable has successfully been edited.')
+    elif message.content.startswith('$subcal winter'):
+        if len(message.attachments) == 0:
+            await message.channel.send(message.author.mention + ', you must include the ICalendar file downloaded'
+                                                                ' from the ACORN website as an attachment.')
+        else:
+            results = ical_receive_file(message.attachments[0].url, message.author.id, 2)
+
+            if results.get('not_ics'):
+                await message.channel.send(message.author.mention + ', that is not a .ics file. Make sure you are'
+                                                                    ' submitting the file downloaded from the ACORN'
+                                                                    ' website.')
+            if results.get('submitted'):
+                await message.channel.send(message.author.mention + ', your timetable has successfully been edited.')
     elif message.content.startswith('$help'):
         await message.channel.send(message.author.mention +
             """
