@@ -136,10 +136,10 @@ async def on_message(message):
             Commands include:
             $template: gets generic excel template
             $submit: submits the attached spreadsheet as a timetable
+            $subcal: edits timetable using ical file from ACORN. Use <$subcal help> for more details about this
             $delete: deletes your current timetable
             $get: gets your current submitted schedule as an excel file
             $free: mention everyone who has no classes at the moment
-            $subcal: edits timetable using ical file from ACORN. Use <$subcal help> for more details about this
             """)
     elif message.content.startswith('$subcal help'):
         await message.channel.send(message.author.mention +
@@ -147,7 +147,8 @@ async def on_message(message):
             The $subcal command is used for importing ical(.ics) schedules downloaded from ACORN.
             To find how to retrieve your ical schedule from the ACORN site, use <$subcal retrieve help>.
             Once you have your ical schedule for the semester, use the command:
-            $subcal <semester>, where <semester> semester is the semester for your ical schedule, i.e. summer, fall, winter.
+            "$subcal <semester>", where <semester> is the semester for your ical schedule, i.e. summer, fall, winter.
+            An example command for editing your fall timetable would be "$subcal fall"
             Make sure the ical file is attached to your command message.
             If you do not currently have a timetable, this command will create one for you.
             """)
